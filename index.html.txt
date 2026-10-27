@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>বাংলাদেশের বিশ্ববিদ্যালয় ভর্তি তথ্য</title>
+    <!-- Tailwind CSS (ডিজাইন ফ্রেমওয়ার্ক) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+    <!-- হেডার বা নেভিগেশন বার -->
+    <header class="bg-blue-700 text-white p-4 shadow-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold cursor-pointer" onclick="showHomePage()">UniInfo BD</h1>
+            <button onclick="showHomePage()" class="bg-blue-600 hover:bg-blue-800 px-3 py-1 rounded text-sm transition">
+                হোম পেইজ
+            </button>
+        </div>
+    </header>
+
+    <!-- মূল হোম পেইজ (সার্চ, ফিল্টার এবং ভার্সিটি কার্ড) -->
+    <main id="home-page" class="max-w-6xl mx-auto p-4 md:p-6">
+        <div class="text-center my-6">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">বাংলাদেশের বিশ্ববিদ্যালয় সমূহের ভর্তি তথ্য</h2>
+            <p class="text-gray-600">সহজে যেকোনো বিশ্ববিদ্যালয় অনুসন্ধান, গ্রুপ (Science/Commerce/Arts) ও লোকেশন ফিল্টার করুন</p>
+        </div>
+
+        <!-- সার্চ এবং ফিল্টার বার অংশ -->
+        <div class="bg-white p-4 md:p-6 rounded-lg shadow-md mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                <!-- ১. সার্চ বার -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">স্মার্ট সার্চ</label>
+                    <input type="text" id="search-input" oninput="applyFilters()" 
+                        placeholder="যেমন: Khulna Uni, DU, Buet..." 
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <!-- ২. শাখা বা গ্রুপ ফিল্টার -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">পড়াশোনার শাখা (Group)</label>
+                    <select id="stream-filter" onchange="applyFilters()" 
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="all">সকল শাখা (All)</option>
+                        <option value="science">বিজ্ঞান (Science)</option>
+                        <option value="commerce">ব্যবসায় শিক্ষা (Commerce)</option>
+                        <option value="arts">মানবিক (Arts)</option>
+                    </select>
+                </div>
+
+                <!-- ৩. ক্যাটাগরি ফিল্টার -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">ক্যাটাগরি</label>
+                    <select id="category-filter" onchange="applyFilters()" 
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="all">সকল ক্যাটাগরি</option>
+                        <option value="সাধারণ">সাধারণ বিশ্ববিদ্যালয়</option>
+                        <option value="বিজ্ঞান ও প্রযুক্তি">বিজ্ঞান ও প্রযুক্তি</option>
+                        <option value="প্রকৌশল">প্রকৌশল (Engineering)</option>
+                        <option value="কৃষি">কৃষি (Agriculture)</option>
+                    </select>
+                </div>
+
+                <!-- ৪. লোকেশন বা বিভাগ ফিল্টার -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">লোকেশন (বিভাগ)</label>
+                    <select id="location-filter" onchange="applyFilters()" 
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="all">সকল বিভাগ</option>
+                        <option value="ঢাকা">ঢাকা</option>
+                        <option value="খুলনা">খুলনা</option>
+                        <option value="রাজশাহী">রাজশাহী</option>
+                        <option value="চট্টগ্রাম">চট্টগ্রাম</option>
+                        <option value="রংপুর">রংপুর</option>
+                        <option value="ময়মনসিংহ">ময়মনসিংহ</option>
+                        <option value="বরিশাল">বরিশাল</option>
+                        <option value="সিলেট">সিলেট</option>
+                    </select>
+                </div>
+
+            </div>
+            
+            <div id="result-count" class="mt-4 text-xs font-semibold text-gray-500 text-right"></div>
+        </div>
+
+        <!-- বিশ্ববিদ্যালয় গ্রিড লিস্ট -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="university-grid"></div>
+
+        <!-- সার্চ রেজাল্ট না পাওয়া গেলে এই মেসেজ দেখাবে -->
+        <div id="no-results" class="hidden text-center py-12">
+            <p class="text-xl font-semibold text-gray-500">কোনো বিশ্ববিদ্যালয় খুঁজে পাওয়া যায়নি!</p>
+            <p class="text-sm text-gray-400 mt-1">দয়া করে অন্য কোনো কীওয়ার্ড বা ফিল্টার সিলেক্ট করুন।</p>
+        </div>
+    </main>
+
+    <!-- একক বিশ্ববিদ্যালয়ের বিস্তারিত দেখার পেইজ (Dynamic Details View) -->
+    <section id="details-page" class="max-w-5xl mx-auto p-4 md:p-6 hidden">
+        <button onclick="showHomePage()" class="mb-4 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded font-medium flex items-center gap-2">
+            ← পেছনে যান
+        </button>
+
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- বিশ্ববিদ্যালয়ের ছবি -->
+            <img id="uni-image" src="" alt="Campus Image" class="w-full h-64 md:h-80 object-cover">
+
+            <div class="p-6">
+                <!-- নাম ও ক্যাটাগরি -->
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <h2 id="uni-name" class="text-3xl font-bold text-blue-800"></h2>
+                    <span id="uni-category" class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded"></span>
+                </div>
+                <p id="uni-location" class="text-gray-500 mb-6 font-semibold"></p>
+
+                <hr class="my-4">
+
+                <!-- ক্যাম্পাস পরিচিতি -->
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">🏛️ ক্যাম্পাস ও সংক্ষিপ্ত তথ্য</h3>
+                    <p id="uni-description" class="text-gray-700 leading-relaxed"></p>
+                </div>
+
+                <!-- ভর্তি যোগ্যতা -->
+                <div class="mb-6 bg-blue-50 p-4 rounded-lg border-l-4 border-blue-600">
+                    <h3 class="text-xl font-bold text-blue-900 mb-2">🎓 ভর্তি যোগ্যতা ও তথ্য</h3>
+                    <p id="uni-requirements" class="text-gray-700 whitespace-pre-line leading-relaxed"></p>
+                </div>
+
+                <!-- বিষয় তালিকা -->
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">📚 বিষয় ও অনুষদসমূহ (Subject & Faculties)</h3>
+                    <ul id="uni-subjects" class="grid grid-cols-1 md:grid-cols-2 gap-2 list-disc list-inside text-gray-700"></ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ফুটার -->
+    <footer class="bg-gray-800 text-white text-center p-4 mt-12">
+        <p>© 2026 UniInfo BD - সকল অধিকার সংরক্ষিত</p>
+    </footer>
+
+    <!-- ========================================================================= -->
+    <!-- জাভাস্ক্রিপ্ট সেকশন (এখান থেকে আপনি নতুন ভার্সিটির ডাটা যুক্ত/এডিট করবেন) -->
+    <!-- ========================================================================= -->
+    <script>
+        
+        /* 
+         =============================================================================
+         📌 নতুন বিশ্ববিদ্যালয় যুক্ত করার গাইডলাইন:
+         -----------------------------------------------------------------------------
+         নিচের 'universities' লিস্ট বা Array এর ভেতরে একটি নতুন অবজেক্ট যোগ করুন।
+         
+         নতুন ভার্সিটি যুক্ত করার জন্য নিচের ফরম্যাটটি কপি করে পেস্ট করুন:
+
+         { 
+             id: "আপনার_পছন্দের_ইউনিক_আইডি", 
+             name: "বিশ্ববিদ্যালয়ের নাম (অ্যাক্রোনিম সহ)", 
+             acronym: "সংক্ষিপ্ত নাম", 
+             category: "সাধারণ / বিজ্ঞান ও প্রযুক্তি / প্রকৌশল / কৃষি", 
+             division: "ঢাকা / খুলনা / রাজশাহী / চট্টগ্রাম / রংপুর / ময়মনসিংহ / বরিশাল / সিলেট", 
+             location: "ঠিকানা, জেলা", 
+             streams: ["science", "commerce", "arts"], // যে সকল গ্রুপে ভর্তি হওয়া যায়
+             keywords: ["search_keyword1", "search_keyword2"], // সার্চ করার সহজ নাম
+             image: "অনলাইন_ছবি_লিংক_URL", 
+             description: "ক্যাম্পাস এবং ভার্সিটির বিবরণ...", 
+             requirements: "ভর্তি আবেদনের যোগ্যতা...", 
+             subjects: ["বিষয় ১", "বিষয় ২", "বিষয় ৩"] 
+         },
+         =============================================================================
+        */
+
+        const universities = [
+            
+            // --- সাধারণ বিশ্ববিদ্যালয়সমূহ ---
+            { 
+                id: "du", 
+                name: "ঢাকা বিশ্ববিদ্যালয় (DU)", 
+                acronym: "DU", 
+                category: "সাধারণ", 
+                division: "ঢাকা", 
+                location: "শাহবাগ, ঢাকা", 
+                streams: ["science", "commerce", "arts"], 
+                keywords: ["du", "dhaka university", "dhaka uni", "ঢাকা বিশ্ববিদ্যালয়"], 
+                image: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1000&q=80", 
+                description: "১৯২১ সালে প্রতিষ্ঠিত ঢাকা বিশ্ববিদ্যালয় বাংলাদেশের প্রাচীনতম এবং অন্যতম প্রধান পাবলিক বিশ্ববিদ্যালয়।", 
+                requirements: "• SSC ও HSC তে ন্যূনতম মোট GPA ৮.০০ - ৯.০০ (ইউনিটভেদে ভিন্ন)।\n• ক, খ, গ ইউনিটের মাধ্যমে ভর্তি পরীক্ষা নেওয়া হয়।", 
+                subjects: ["কম্পিউটার সায়েন্স (Science)", "রসায়ন (Science)", "আইন (Arts)", "ব্যবস্থাপনা (Commerce)", "অর্থনীতি (Arts/Commerce)"] 
+            },
+            { 
+                id: "ku", 
+                name: "খুলনা বিশ্ববিদ্যালয় (KU)", 
+                acronym: "KU", 
+                category: "সাধারণ", 
+                division: "খুলনা", 
+                location: "গল্লামারী, খুলনা", 
+                streams: ["science", "commerce", "arts"], 
+                keywords: ["ku", "khulna university", "khulna uni", "খুলনা বিশ্ববিদ্যালয়"], 
+                image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1000&q=80", 
+                description: "খুলনা বিশ্ববিদ্যালয় একটি রাজনীতিমুক্ত এবং সেশনজটমুক্ত স্বনামধন্য পাবলিক বিশ্ববিদ্যালয়।", 
+                requirements: "• খুলনা বিশ্ববিদ্যালয় নিজস্ব একক ভর্তি পরীক্ষার মাধ্যমে শিক্ষার্থী ভর্তি নেয়।\n• বিজ্ঞান স্কুলের জন্য মোট GPA ৮.০০ বা তদূর্ধ্ব আবশ্যক।", 
+                subjects: ["ইলেকট্রনিক্স অ্যান্ড কমিউনিকেশন ECE (Science)", "রসায়ন (Science)", "ফার্মেসি (Science)", "চারুকলা (Arts)", "ব্যবস্থাপনা (Commerce)"] 
+            },
+            { 
+                id: "ru", 
+                name: "রাজশাহী বিশ্ববিদ্যালয় (RU)", 
+                acronym: "RU", 
+                category: "সাধারণ", 
+                division: "রাজশাহী", 
+                location: "মতিহার, রাজশাহী", 
+                streams: ["science", "commerce", "arts"], 
+                keywords: ["ru", "rajshahi university", "rajshahi uni", "রাজশাহী বিশ্ববিদ্যালয়"], 
+                image: "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&w=1000&q=80", 
+                description: "রাজশাহী বিশ্ববিদ্যালয় উত্তরবঙ্গের সবচেয়ে বড় এবং চমৎকার সবুজ ক্যাম্পাসের বিশ্ববিদ্যালয়।", 
+                requirements: "• SSC ও HSC তে মোট GPA ৭.০০ - ৮.০০ এর মধ্যে থাকতে হবে।", 
+                subjects: ["পদার্থবিজ্ঞান (Science)", "রসায়ন (Science)", "আইন বিভাগ (Arts)", "উদ্ভিদবিজ্ঞান (Science)", "বিবিএ (Commerce)"] 
+            },
+            { 
+                id: "cu", 
+                name: "চট্টগ্রাম বিশ্ববিদ্যালয় (CU)", 
+                acronym: "CU", 
+                category: "সাধারণ", 
+                division: "চট্টগ্রাম", 
+                location: "হাঠহাজারী, চট্টগ্রাম", 
+                streams: ["science", "commerce", "arts"], 
+                keywords: ["cu", "chittagong university", "chittagong uni", "চট্টগ্রাম বিশ্ববিদ্যালয়"], 
+                image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1000&q=80", 
+                description: "সবুজ পাহাড় পরিবেষ্টিত চমৎকার প্রাকৃতিক সৌন্দর্যের ক্যাম্পাস।", 
+                requirements: "• শাখা অনুযায়ী মোট GPA ৭.৫০ - ৮.৫০ প্রয়োজন।", 
+                subjects: ["মেরিন সায়েন্স (Science)", "কম্পিউটার সায়েন্স (Science)", "অর্থনীতি (Arts)", "আইন (Arts)", "ফিন্যান্স (Commerce)"] 
+            },
+
+            // --- প্রকৌশল (Engineering) বিশ্ববিদ্যালয়সমূহ ---
+            { 
+                id: "buet", 
+                name: "বাংলাদেশ প্রকৌশল বিশ্ববিদ্যালয় (BUET)", 
+                acronym: "BUET", 
+                category: "প্রকৌশল", 
+                division: "ঢাকা", 
+                location: "পলাশী, ঢাকা", 
+                streams: ["science"], 
+                keywords: ["buet", "buet uni", "buet dhaka", "বুয়েট"], 
+                image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1000&q=80", 
+                description: "দেশের শীর্ষস্থানীয় প্রকৌশল ও প্রযুক্তি শিক্ষার অন্যতম শ্রেষ্ঠ কেন্দ্র।", 
+                requirements: "• SSC ও HSC তে পদার্থ, রসায়ন ও গণিতে জিপিএ ৫.০০ আবশ্যক।\n• প্রাক-নির্বাচনী ও মূল লিখিত পরীক্ষা।", 
+                subjects: ["CSE (Science)", "EEE (Science)", "Civil Engineering (Science)", "Mechanical Engineering (Science)", "Architecture (Science)"] 
+            },
+            { 
+                id: "kuet", 
+                name: "খুলনা প্রকৌশল ও প্রযুক্তি বিশ্ববিদ্যালয় (KUET)", 
+                acronym: "KUET", 
+                category: "প্রকৌশল", 
+                division: "খুলনা", 
+                location: "ফুলবাড়ী গেট, খুলনা", 
+                streams: ["science"], 
+                keywords: ["kuet", "kuet uni", "khulna kuet", "কুয়েট"], 
+                image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1000&q=80", 
+                description: "দক্ষিণ-পশ্চিমাঞ্চলের প্রধান ইঞ্জিনিয়ারিং ক্যাম্পাস।", 
+                requirements: "• প্রকৌশল গুচ্ছ পরীক্ষার মাধ্যমে ভর্তি নেওয়া হয়।", 
+                subjects: ["CSE (Science)", "EEE (Science)", "ECE (Science)", "BME (Science)", "Civil Engineering (Science)"] 
+            },
+            { 
+                id: "ruet", 
+                name: "রাজশাহী প্রকৌশল ও প্রযুক্তি বিশ্ববিদ্যালয় (RUET)", 
+                acronym: "RUET", 
+                category: "প্রকৌশল", 
+                division: "রাজশাহী", 
+                location: "মতিহার, রাজশাহী", 
+                streams: ["science"], 
+                keywords: ["ruet", "ruet uni", "rajshahi ruet", "রুয়েট"], 
+                image: "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&w=1000&q=80", 
+                description: "উত্তরবঙ্গের শীর্ষ ইঞ্জিনিয়ারিং বিশ্ববিদ্যালয়।", 
+                requirements: "• প্রকৌশল গুচ্ছ ভর্তি পরীক্ষা।", 
+                subjects: ["CSE (Science)", "EEE (Science)", "ECE (Science)", "Civil (Science)", "Mechanical (Science)"] 
+            },
+
+            // --- বিজ্ঞান ও প্রযুক্তি বিশ্ববিদ্যালয়সমূহ ---
+            { 
+                id: "sust", 
+                name: "শাহজালাল বিজ্ঞান ও প্রযুক্তি বিশ্ববিদ্যালয় (SUST)", 
+                acronym: "SUST", 
+                category: "বিজ্ঞান ও প্রযুক্তি", 
+                division: "সিলেট", 
+                location: "কুমারগাঁও, সিলেট", 
+                streams: ["science", "commerce", "arts"], 
+                keywords: ["sust", "sust uni", "shahjalal university", "শাহজালাল বিজ্ঞান ও প্রযুক্তি বিশ্ববিদ্যালয়"], 
+                image: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1000&q=80", 
+                description: "দেশের প্রথম এবং সেরা বিজ্ঞান ও প্রযুক্তি বিশ্ববিদ্যালয়।", 
+                requirements: "• বিজ্ঞান বিভাগে ভালো জিপিএ এবং নির্ধারিত ভর্তি পরীক্ষা।", 
+                subjects: ["Software Engineering (Science)", "CSE (Science)", "Physics (Science)", "সমাজকর্ম (Arts)", "ব্যবসায় প্রশাসন (Commerce)"] 
+            },
+            { 
+                id: "just", 
+                name: "যশোর বিজ্ঞান ও প্রযুক্তি বিশ্ববিদ্যালয় (JUST)", 
+                acronym: "JUST", 
+                category: "বিজ্ঞান ও প্রযুক্তি", 
+                division: "খুলনা", 
+                location: "কোতোয়ালী, যশোর", 
+                streams: ["science", "commerce"], 
+                keywords: ["just", "jessore uni", "jashore uni", "যশোর বিজ্ঞান ও প্রযুক্তি বিশ্ববিদ্যালয়"], 
+                image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1000&q=80", 
+                description: "উচ্চতর গবেষণা ও উন্নত ল্যাবের জন্য পরিচিত বিশ্ববিদ্যালয়।", 
+                requirements: "• বিজ্ঞান ও নির্ধারিত শাখা থেকে আবেদন গ্রহণ।", 
+                subjects: ["GEBT (Science)", "CSE (Science)", "Chemical Engineering (Science)", "Accounting (Commerce)"] 
+            },
+
+            // --- কৃষি বিশ্ববিদ্যালয়সমূহ ---
+            { 
+                id: "bau", 
+                name: "বাংলাদেশ কৃষি বিশ্ববিদ্যালয় (BAU)", 
+                acronym: "BAU", 
+                category: "কৃষি", 
+                division: "ময়মনসিংহ", 
+                location: "কোতোয়ালী, ময়মনসিংহ", 
+                streams: ["science"], 
+                keywords: ["bau", "bau mymensingh", "agricultural university", "বাকৃবি"], 
+                image: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1000&q=80", 
+                description: "দক্ষিণ এশিয়ার অন্যতম সেরা ও সমৃদ্ধ কৃষি বিশ্ববিদ্যালয়।", 
+                requirements: "• কৃষি গুচ্ছ ভর্তি পরীক্ষার মাধ্যমে ভর্তি নেওয়া হয়।", 
+                subjects: ["Veterinary Science (Science)", "Agriculture (Science)", "Fisheries (Science)", "Agricultural Engineering (Science)"] 
+            }
+
+            /* 💡 উপরে দেওয়া নিয়মে আপনি চাইলে আরও নতুন ভার্সিটির কোড ব্লক যোগ করতে পারেন */
+        ];
+
+
+        // =========================================================================
+        // ⚙️ ওয়েবসাইট ফিল্টারিং ও রেন্ডারিং ফাংশনসমূহ (এখানে এডিট করার প্রয়োজন নেই)
+        // =========================================================================
+
+        // ১. কার্ড রেন্ডার করা (হোম পেইজে ভার্সিটির লিস্ট দেখাবে)
+        function renderCards(dataList) {
+            const grid = document.getElementById('university-grid');
+            const noResults = document.getElementById('no-results');
+            const resultCount = document.getElementById('result-count');
+            
+            grid.innerHTML = '';
+            resultCount.innerText = `মোট প্রাপ্ত বিশ্ববিদ্যালয়: ${dataList.length}টি`;
+
+            if (dataList.length === 0) {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+                dataList.forEach(uni => {
+                    const card = document.createElement('div');
+                    card.className = "bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer transform hover:-translate-y-1 flex flex-col justify-between";
+                    card.onclick = () => showDetailsPage(uni.id);
+
+                    card.innerHTML = `
+                        <div>
+                            <img src="${uni.image}" alt="${uni.name}" class="w-full h-40 object-cover">
+                            <div class="p-4">
+                                <h3 class="text-lg font-bold text-gray-800 leading-snug mb-1">${uni.name}</h3>
+                                <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded mb-2">${uni.category}</span>
+                                <p class="text-gray-500 text-xs mb-2">📍 ${uni.location} (${uni.division} বিভাগ)</p>
+                                <p class="text-gray-600 text-xs line-clamp-2">${uni.description || ''}</p>
+                            </div>
+                        </div>
+                        <div class="p-4 pt-0">
+                            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 rounded transition">
+                                বিস্তারিত দেখুন →
+                            </button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+        }
+
+        // ২. ফিল্টারিং লজিক (স্মার্ট সার্চ, বিভাগ ফিল্টার, গ্রুপ ফিল্টার)
+        function applyFilters() {
+            const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+            const streamVal = document.getElementById('stream-filter').value;
+            const categoryVal = document.getElementById('category-filter').value;
+            const locationVal = document.getElementById('location-filter').value;
+
+            const filtered = universities.filter(uni => {
+                // গ্রুপ বা শাখা ম্যাচিং
+                const matchStream = (streamVal === 'all') || (uni.streams && uni.streams.includes(streamVal));
+                
+                // ক্যাটাগরি ম্যাচিং
+                const matchCategory = (categoryVal === 'all') || (uni.category === categoryVal);
+                
+                // লোকেশন / বিভাগ ম্যাচিং (সরাসরি টেক্সট মিলানো)
+                const matchLocation = (locationVal === 'all') || (uni.division && uni.division.trim() === locationVal.trim());
+
+                // স্মার্ট সার্চ ম্যাচিং (কাছাকাছি নাম, অ্যাক্রোনিম বা কীওয়ার্ড দিয়ে সার্চ)
+                let matchSearch = false;
+                if (!searchVal) {
+                    matchSearch = true;
+                } else {
+                    const searchWords = searchVal.split(" ");
+                    matchSearch = searchWords.every(word => {
+                        return uni.name.toLowerCase().includes(word) ||
+                               (uni.acronym && uni.acronym.toLowerCase().includes(word)) ||
+                               (uni.location && uni.location.toLowerCase().includes(word)) ||
+                               (uni.keywords && uni.keywords.some(k => k.toLowerCase().includes(word)));
+                    });
+                }
+
+                return matchStream && matchCategory && matchLocation && matchSearch;
+            });
+
+            renderCards(filtered);
+        }
+
+        // ৩. নির্দিষ্ট ভার্সিটির বিস্তারিত পেইজ দেখানো
+        function showDetailsPage(uniId) {
+            const uni = universities.find(u => u.id === uniId);
+            if (!uni) return;
+
+            document.getElementById('uni-name').innerText = uni.name;
+            document.getElementById('uni-category').innerText = uni.category;
+            document.getElementById('uni-location').innerText = "📍 " + uni.location + " (" + uni.division + " বিভাগ)";
+            document.getElementById('uni-image').src = uni.image;
+            document.getElementById('uni-description').innerText = uni.description || "তথ্য উপলব্ধ নয়।";
+            document.getElementById('uni-requirements').innerText = uni.requirements || "তথ্য উপলব্ধ নয়।";
+
+            const subjectsList = document.getElementById('uni-subjects');
+            subjectsList.innerHTML = '';
+            if(uni.subjects && uni.subjects.length > 0) {
+                uni.subjects.forEach(subject => {
+                    const li = document.createElement('li');
+                    li.innerText = subject;
+                    subjectsList.appendChild(li);
+                });
+            } else {
+                subjectsList.innerHTML = '<li>কোনো বিষয় যুক্ত করা হয়নি।</li>';
+            }
+
+            document.getElementById('home-page').classList.add('hidden');
+            document.getElementById('details-page').classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+
+        // ৪. হোম পেইজে ফিরে যাওয়ার ফাংশন
+        function showHomePage() {
+            document.getElementById('details-page').classList.add('hidden');
+            document.getElementById('home-page').classList.remove('hidden');
+            applyFilters();
+            window.scrollTo(0, 0);
+        }
+
+        // প্রথমবার পেজ লোড হলে ফিল্টার ও রেন্ডার চালানো
+        applyFilters();
+    </script>
+</body>
+</html>
